@@ -22,5 +22,10 @@ namespace BulkyWeb.Controllers
 			// If don’t use .ToList(), _db.Categories remains an IQueryable<Category> , executions in the sql
 			return View(objCategoriesList);
         }
+
+		public IActionResult Create()
+		{
+			return View();
+		}
     }
 }
