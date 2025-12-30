@@ -23,26 +23,57 @@ namespace BulkyWeb.Controllers
 			return View(objCategoriesList);
         }
 
-		public IActionResult Create()
+		public IActionResult Upsert(int? id)
 		{
-			return View();
+			if (id == 0 || id == null)
+			{
+				// Create
+				return View(new Category());
+			}
+			var category = _db.Categories.FirstOrDefault(c => c.Id == id);
+			if (category == null)
+			{
+				return NotFound();
+			}
+			return View(category);
+
 		}
 
 		[HttpPost]
-		public IActionResult Create(Category obj)
+		public IActionResult Upsert(Category obj)
 		{
-			if (obj.Name == obj.DisplayOrder.ToString())
+			// Custom validation
+			if (obj.DisplayOrder != null &&
+				obj.Name == obj.DisplayOrder.ToString())
 			{
-				ModelState.AddModelError("Name", "The Display Order and Name cannot be the same");
+				ModelState.AddModelError("Name",
+					"The Display Order and Name cannot be the same");
 			}
-			if (ModelState.IsValid)
+
+			if (!ModelState.IsValid)
 			{
-			_db.Categories.Add(obj);
+				return View(obj);
+			}
+
+			if (obj.Id == 0)
+			{
+				// CREATE
+				_db.Categories.Add(obj);
+				TempData["success"] = "Category created successfully";
+			}
+			else
+			{
+				// EDIT
+				_db.Categories.Update(obj);
+				TempData["success"] = "Category updated successfully";
+
+			}
+
 			_db.SaveChanges();
-			//return RedirectToAction("Index", "Category");
-			return RedirectToAction("Index");
-			}
-			return View();
+			return RedirectToAction(nameof(Index));
+			//RedirectToAction("Index", "Category")
 		}
-    }
+
+
+	}
 }
